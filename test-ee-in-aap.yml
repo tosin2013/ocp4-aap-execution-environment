@@ -1,0 +1,222 @@
+---
+# Test Custom Execution Environment in AAP
+# Configures AAP to use quay.io/takinosh/ocp4-aap-execution-environment:latest
+# and runs a validation job to ensure it works
+
+- name: Configure and Test Custom EE in AAP
+  hosts: localhost
+  gather_facts: false
+  vars:
+    aap_host: "aap.sandbox3377.opentlc.com"
+    aap_validate_certs: true
+
+    # Execution Environment Configuration
+    ee_name: "OCP4 AAP Execution Environment"
+    ee_image: "quay.io/takinosh/ocp4-aap-execution-environment:latest"
+    ee_pull: "always"
+
+    # Test Project Configuration
+    test_project_name: "EE Validation Test"
+    test_inventory_name: "Localhost Inventory"
+    test_job_template_name: "Validate Custom EE"
+
+  tasks:
+    - name: Ensure controller_username and controller_password are set
+      ansible.builtin.assert:
+        that:
+          - controller_username is defined
+          - controller_password is defined
+        fail_msg: "Missing AAP credentials. Run with: -e controller_username=admin -e controller_password=YourPassword"
+
+    - name: Add Quay credential to AAP
+      ansible.controller.credential:
+        name: "Quay Robot Account - OCP4 EE"
+        description: "Robot account for pulling custom execution environment from Quay"
+        organization: "Default"
+        credential_type: "Container Registry"
+        controller_host: "https://{{ aap_host }}"
+        controller_username: "{{ controller_username }}"
+        controller_password: "{{ controller_password }}"
+        validate_certs: "{{ aap_validate_certs }}"
+        inputs:
+          host: "quay.io"
+          username: "{{ quay_username }}"
+          password: "{{ quay_password }}"
+          verify_ssl: true
+        state: present
+      register: quay_credential
+
+    - name: Add Custom Execution Environment to AAP
+      ansible.controller.execution_environment:
+        name: "{{ ee_name }}"
+        description: "Custom EE with kubernetes.core, aws, azure collections + oc/kubectl tools"
+        image: "{{ ee_image }}"
+        pull: "{{ ee_pull }}"
+        credential: "Quay Robot Account - OCP4 EE"
+        organization: "Default"
+        controller_host: "https://{{ aap_host }}"
+        controller_username: "{{ controller_username }}"
+        controller_password: "{{ controller_password }}"
+        validate_certs: "{{ aap_validate_certs }}"
+        state: present
+      register: custom_ee
+
+    - name: Create test project (inline playbook)
+      ansible.controller.project:
+        name: "{{ test_project_name }}"
+        description: "Test project to validate custom EE functionality"
+        organization: "Default"
+        scm_type: "manual"
+        controller_host: "https://{{ aap_host }}"
+        controller_username: "{{ controller_username }}"
+        controller_password: "{{ controller_password }}"
+        validate_certs: "{{ aap_validate_certs }}"
+        state: present
+      register: test_project
+
+    - name: Create localhost inventory for testing
+      ansible.controller.inventory:
+        name: "{{ test_inventory_name }}"
+        description: "Localhost inventory for EE validation tests"
+        organization: "Default"
+        controller_host: "https://{{ aap_host }}"
+        controller_username: "{{ controller_username }}"
+        controller_password: "{{ controller_password }}"
+        validate_certs: "{{ aap_validate_certs }}"
+        state: present
+      register: test_inventory
+
+    - name: Add localhost to inventory
+      ansible.controller.host:
+        name: "localhost"
+        description: "Local execution host"
+        inventory: "{{ test_inventory_name }}"
+        variables:
+          ansible_connection: local
+        controller_host: "https://{{ aap_host }}"
+        controller_username: "{{ controller_username }}"
+        controller_password: "{{ controller_password }}"
+        validate_certs: "{{ aap_validate_certs }}"
+        state: present
+
+    - name: Create validation job template
+      ansible.controller.job_template:
+        name: "{{ test_job_template_name }}"
+        description: "Validates custom EE has required collections and tools"
+        job_type: "run"
+        organization: "Default"
+        inventory: "{{ test_inventory_name }}"
+        project: "{{ test_project_name }}"
+        playbook: "validate-ee.yml"
+        execution_environment: "{{ ee_name }}"
+        credentials: []
+        controller_host: "https://{{ aap_host }}"
+        controller_username: "{{ controller_username }}"
+        controller_password: "{{ controller_password }}"
+        validate_certs: "{{ aap_validate_certs }}"
+        ask_variables_on_launch: false
+        state: present
+      register: validation_job_template
+
+    - name: Display configuration summary
+      ansible.builtin.debug:
+        msg:
+          - "✅ Custom Execution Environment configured in AAP"
+          - "   Name: {{ ee_name }}"
+          - "   Image: {{ ee_image }}"
+          - "   Pull Policy: {{ ee_pull }}"
+          - "   Credential: Quay Robot Account - OCP4 EE"
+          - ""
+          - "✅ Validation Resources Created"
+          - "   Project: {{ test_project_name }}"
+          - "   Inventory: {{ test_inventory_name }}"
+          - "   Job Template: {{ test_job_template_name }}"
+          - ""
+          - "📋 Next Steps:"
+          - "   1. Create validate-ee.yml playbook in AAP project"
+          - "   2. Run '{{ test_job_template_name }}' job template"
+          - "   3. Verify collections and tools are available"
+          - ""
+          - "🌐 AAP Web UI: https://{{ aap_host }}"
+          - "   Navigate to: Administration → Execution Environments"
+
+    - name: Create validation playbook content
+      ansible.builtin.copy:
+        dest: "/tmp/validate-ee.yml"
+        content: |
+          ---
+          # Validation playbook to test custom EE
+          - name: Validate Custom Execution Environment
+            hosts: localhost
+            gather_facts: true
+            tasks:
+              - name: Display Ansible version
+                ansible.builtin.debug:
+                  msg: "Ansible {{ ansible_version.full }}"
+
+              - name: List installed collections
+                ansible.builtin.command: ansible-galaxy collection list
+                register: collection_list
+                changed_when: false
+
+              - name: Display installed collections
+                ansible.builtin.debug:
+                  var: collection_list.stdout_lines
+
+              - name: Verify kubernetes.core collection
+                ansible.builtin.command: ansible-galaxy collection list kubernetes.core
+                register: k8s_collection
+                changed_when: false
+                failed_when: "'kubernetes.core' not in k8s_collection.stdout"
+
+              - name: Verify amazon.aws collection
+                ansible.builtin.command: ansible-galaxy collection list amazon.aws
+                register: aws_collection
+                changed_when: false
+                failed_when: "'amazon.aws' not in aws_collection.stdout"
+
+              - name: Verify azure.azcollection collection
+                ansible.builtin.command: ansible-galaxy collection list azure.azcollection
+                register: azure_collection
+                changed_when: false
+                failed_when: "'azure.azcollection' not in azure_collection.stdout"
+
+              - name: Check oc binary
+                ansible.builtin.command: which oc
+                register: oc_binary
+                changed_when: false
+
+              - name: Display oc version
+                ansible.builtin.command: oc version --client
+                register: oc_version
+                changed_when: false
+
+              - name: Check kubectl binary
+                ansible.builtin.command: which kubectl
+                register: kubectl_binary
+                changed_when: false
+
+              - name: Display kubectl version
+                ansible.builtin.command: kubectl version --client
+                register: kubectl_version
+                changed_when: false
+
+              - name: Validation Summary
+                ansible.builtin.debug:
+                  msg:
+                    - "✅ Custom Execution Environment Validation PASSED"
+                    - "   Ansible: {{ ansible_version.full }}"
+                    - "   kubernetes.core: {{ k8s_collection.stdout | regex_search('kubernetes\\.core\\s+([0-9.]+)', '\\1') | first }}"
+                    - "   amazon.aws: {{ aws_collection.stdout | regex_search('amazon\\.aws\\s+([0-9.]+)', '\\1') | first }}"
+                    - "   azure.azcollection: {{ azure_collection.stdout | regex_search('azure\\.azcollection\\s+([0-9.]+)', '\\1') | first }}"
+                    - "   oc: {{ oc_binary.stdout }}"
+                    - "   kubectl: {{ kubectl_binary.stdout }}"
+        mode: '0644'
+      register: validation_playbook_file
+
+    - name: Display validation playbook location
+      ansible.builtin.debug:
+        msg:
+          - "📝 Validation playbook created at: {{ validation_playbook_file.dest }}"
+          - "   Copy this to AAP project directory for manual testing"
+          - "   Or upload via AAP Web UI: Projects → {{ test_project_name }} → Add Playbook"

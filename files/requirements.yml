@@ -10,9 +10,11 @@
 collections:
   # - name: redhat_cop.aap_utilities  # aap
   # - name: infra.aap_configuration  # aap
-  - name: ansible.platform  # aap (pulls kubernetes.core; requires openshift-clients on RHEL)
-  - name: ansible.hub  # aap
-  - name: ansible.controller  # aap
+  # AAP-licensed collections (requires Automation Hub authentication)
+  # galaxy.sh --console configures access via ANSIBLE_GALAXY_TOKEN
+  # TEMPORARY (2026-06-09): ansible.controller returns HTTP 400 from Automation Hub
+  # May require token refresh or collection may not be available yet
+  # - name: ansible.controller  # aap (requires Automation Hub)
   # - name: ansible.eda  # aap (may pull kubernetes.core) - TEMPORARILY DISABLED: systemd-python build issue
   - name: amazon.aws  # cloud
   - name: azure.azcollection  # cloud

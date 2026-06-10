@@ -1,0 +1,89 @@
+---
+# Quick ad-hoc test of custom execution environment
+# Runs shell commands to verify collections and binaries
+
+- name: Test Custom EE via Ad-Hoc Command
+  hosts: localhost
+  gather_facts: false
+  vars:
+    aap_host: "aap.sandbox3377.opentlc.com"
+    aap_validate_certs: true
+    ee_name: "OCP4 AAP Execution Environment"
+    test_inventory_name: "Localhost Inventory"
+
+  tasks:
+    - name: Ensure credentials are set
+      ansible.builtin.assert:
+        that:
+          - controller_username is defined
+          - controller_password is defined
+
+    - name: Run ad-hoc command to list collections
+      ansible.controller.ad_hoc_command:
+        inventory: "{{ test_inventory_name }}"
+        limit: "localhost"
+        module_name: "shell"
+        module_args: "ansible-galaxy collection list"
+        execution_environment: "{{ ee_name }}"
+        controller_host: "https://{{ aap_host }}"
+        controller_username: "{{ controller_username }}"
+        controller_password: "{{ controller_password }}"
+        validate_certs: "{{ aap_validate_certs }}"
+        wait: true
+        timeout: 60
+      register: collection_check
+
+    - name: Display collection check results
+      ansible.builtin.debug:
+        var: collection_check
+
+    - name: Run ad-hoc command to check oc version
+      ansible.controller.ad_hoc_command:
+        inventory: "{{ test_inventory_name }}"
+        limit: "localhost"
+        module_name: "shell"
+        module_args: "oc version --client"
+        execution_environment: "{{ ee_name }}"
+        controller_host: "https://{{ aap_host }}"
+        controller_username: "{{ controller_username }}"
+        controller_password: "{{ controller_password }}"
+        validate_certs: "{{ aap_validate_certs }}"
+        wait: true
+        timeout: 60
+      register: oc_check
+
+    - name: Display oc version results
+      ansible.builtin.debug:
+        var: oc_check
+
+    - name: Run ad-hoc command to check kubectl version
+      ansible.controller.ad_hoc_command:
+        inventory: "{{ test_inventory_name }}"
+        limit: "localhost"
+        module_name: "shell"
+        module_args: "kubectl version --client"
+        execution_environment: "{{ ee_name }}"
+        controller_host: "https://{{ aap_host }}"
+        controller_username: "{{ controller_username }}"
+        controller_password: "{{ controller_password }}"
+        validate_certs: "{{ aap_validate_certs }}"
+        wait: true
+        timeout: 60
+      register: kubectl_check
+
+    - name: Display kubectl version results
+      ansible.builtin.debug:
+        var: kubectl_check
+
+    - name: Validation Summary
+      ansible.builtin.debug:
+        msg:
+          - "✅ Custom Execution Environment Test Complete"
+          - ""
+          - "Tested Components:"
+          - "  - Ansible Galaxy Collections: {{ 'PASS' if collection_check.status == 'successful' else 'FAIL' }}"
+          - "  - OpenShift CLI (oc): {{ 'PASS' if oc_check.status == 'successful' else 'FAIL' }}"
+          - "  - Kubernetes CLI (kubectl): {{ 'PASS' if kubectl_check.status == 'successful' else 'FAIL' }}"
+          - ""
+          - "🌐 View detailed results in AAP Web UI:"
+          - "   https://{{ aap_host }}/jobs/"
