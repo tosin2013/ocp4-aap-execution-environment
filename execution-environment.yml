@@ -18,7 +18,7 @@ dependencies:
 
 images:
   base_image:
-    name: 'registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest'
+    name: 'registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest'
 
 options:
   package_manager_path: /usr/bin/microdnf
@@ -174,6 +174,60 @@ additional_build_steps:
             echo "==> Skipping Path B (no OC_URL/OC_VERSION)" ; \
           fi
 
+    # (Optional) Install oc-mirror from tarball (required for AAP image mirroring job templates)
+    # Provide files/optional-configs/oc-mirror-install.env with:
+    #   OC_MIRROR_VERSION=stable-4.21   # or latest-4.21, v4.21.0, etc.
+    #   # or provide a direct URL
+    #   # OC_MIRROR_URL=https://mirror.openshift.com/pub/openshift-v4/clients/ocp/v4.21.0/oc-mirror.tar.gz
+    - >
+      RUN OC_MIRROR_ENV="/_extras/optional/oc-mirror-install.env" ; \
+          if [ -f "$OC_MIRROR_ENV" ]; then set -a; . "$OC_MIRROR_ENV"; set +a; fi ; \
+          if [ -n "$OC_MIRROR_URL" ] || [ -n "$OC_MIRROR_VERSION" ]; then \
+            echo "==> Installing oc-mirror from tarball" && \
+            echo "    OC_MIRROR_VERSION=$OC_MIRROR_VERSION" && \
+            echo "    OC_MIRROR_URL=$OC_MIRROR_URL" && \
+            URL="${OC_MIRROR_URL:-https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OC_MIRROR_VERSION}/oc-mirror.tar.gz}" && \
+            echo "    Final URL=$URL" && \
+            echo "==> Downloading tarball (with retries)..." && \
+            DOWNLOAD_SUCCESS=0 && \
+            for ATTEMPT in 1 2 3; do \
+              echo "    Attempt $ATTEMPT/3..." && \
+              if curl -L --fail --retry 3 --retry-delay 5 --max-time 300 \
+                      -o /tmp/oc-mirror.tgz "$URL" 2>&1 | tee /tmp/curl-mirror.log | tail -10; then \
+                DOWNLOAD_SUCCESS=1 && \
+                echo "✓ Download successful" && \
+                break ; \
+              else \
+                echo "WARNING: Download attempt $ATTEMPT failed" && \
+                sleep 5 ; \
+              fi ; \
+            done && \
+            if [ "$DOWNLOAD_SUCCESS" -eq 0 ]; then \
+              echo "ERROR: Failed to download oc-mirror after 3 attempts" && \
+              cat /tmp/curl-mirror.log && \
+              exit 1 ; \
+            fi && \
+            echo "==> Verifying tarball integrity..." && \
+            if ! tar -tzf /tmp/oc-mirror.tgz >/dev/null 2>&1; then \
+              echo "ERROR: Downloaded oc-mirror tarball is corrupted" && \
+              exit 1 ; \
+            fi && \
+            echo "✓ Tarball integrity verified" && \
+            echo "==> Extracting tarball..." && \
+            tar -C /usr/local/bin -xzf /tmp/oc-mirror.tgz && \
+            echo "==> Setting executable permissions..." && \
+            chmod +x /usr/local/bin/oc-mirror && \
+            echo "==> Creating symlink in /usr/bin for compatibility..." && \
+            ln -sf /usr/local/bin/oc-mirror /usr/bin/oc-mirror && \
+            echo "==> Verifying installation..." && \
+            /usr/local/bin/oc-mirror version && \
+            echo "✓ oc-mirror installation successful" && \
+            echo "==> Cleanup..." && \
+            rm -f /tmp/oc-mirror.tgz /tmp/curl-mirror.log ; \
+          else \
+            echo "==> Skipping oc-mirror (no OC_MIRROR_URL/OC_MIRROR_VERSION)" ; \
+          fi
+
     # (Optional) Install Red Hat OpenShift client tools by enabling repo (prepare with manual steps below)
     # https://access.redhat.com/solutions/6985157
     # https://docs.openshift.com/container-platform/4.13/cli_reference/openshift_cli/getting-started-cli.html#cli-installing-cli-rpm_cli-developer-commands
@@ -209,8 +263,26 @@ additional_build_steps:
     - COPY --from=galaxy /usr/local/bin/oc /usr/local/bin/oc
     - COPY --from=galaxy /usr/local/bin/kubectl /usr/local/bin/kubectl
     - RUN ln -sf /usr/local/bin/oc /usr/bin/oc && ln -sf /usr/local/bin/kubectl /usr/bin/kubectl
+    # Copy oc-mirror binary from galaxy stage (ADR 0029 enhancement - 2026-06-10)
+    - COPY --from=galaxy /usr/local/bin/oc-mirror /usr/local/bin/oc-mirror
+    - RUN ln -sf /usr/local/bin/oc-mirror /usr/bin/oc-mirror
     # Copy functional test playbook for AAP collections
     - COPY _build/configs/playbook.yml /opt/playbook.yml
+    # ADR 0029: Configure registry.redhat.io authentication for AAP project syncs
+    # This allows AAP to pull images from Red Hat registry without authentication errors
+    - ARG REGISTRY_USERNAME
+    - ARG REGISTRY_PASSWORD
+    - >
+      RUN if [ -n "$REGISTRY_USERNAME" ] && [ -n "$REGISTRY_PASSWORD" ]; then \
+            echo "==> Configuring registry.redhat.io authentication..." && \
+            mkdir -p /etc/containers && \
+            echo "$REGISTRY_PASSWORD" | podman login registry.redhat.io \
+              --username "$REGISTRY_USERNAME" --password-stdin && \
+            echo "✓ registry.redhat.io authentication configured" && \
+            ls -la /run/containers/0/auth.json || echo "Auth file location varies by podman version" ; \
+          else \
+            echo "==> Skipping registry.redhat.io auth (no credentials provided)" ; \
+          fi
     # Verify installed packages have compatible dependencies
     # Logged issue https://github.com/ansible/ansible-builder/issues/416
     - RUN pip3 check
