@@ -39,7 +39,7 @@ jobs:
       REDHAT_REGISTRY_PASSWORD: ${{ secrets.REDHAT_REGISTRY_PASSWORD }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for RHSM Credentials
         id: check-creds
