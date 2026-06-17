@@ -113,7 +113,10 @@ jobs:
       - name: Security Scan (Local with Trivy)
         run: |
           echo "Scanning image for HIGH and CRITICAL vulnerabilities..."
-          trivy image --severity HIGH,CRITICAL --exit-code 0 ${{ env.TARGET_NAME }}:${{ steps.tag.outputs.tag }}
+          echo "Exporting image to tarball for Trivy scan..."
+          podman save ${{ env.TARGET_NAME }}:${{ steps.tag.outputs.tag }} -o /tmp/image.tar
+          trivy image --severity HIGH,CRITICAL --exit-code 0 --input /tmp/image.tar
+          rm /tmp/image.tar
           echo "Local scan complete. Full scan will run on Quay after publish."
 
       - name: Publish
