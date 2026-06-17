@@ -1,6 +1,6 @@
 # Documentation Sync Manifest
 
-**Project:** ocp4-aap-execution-environment  
+**Project:** ocp4-aap-execution-environment (AAP Execution Environment Builder)  
 **Version Tag:** docset:v1.2.0  
 **Generated:** 2026-06-17  
 **Source of Truth:** reconcile (docs canonical for full text, PMB stores abstracts/outlines)

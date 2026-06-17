@@ -1,5 +1,6 @@
-# Knowledge Inventory - ocp4-aap-execution-environment v1.2.0
+# Knowledge Inventory - AAP Execution Environment Builder v1.2.0
 
+**Project:** ocp4-aap-execution-environment  
 **Generated:** 2026-06-17  
 **Purpose:** Comprehensive catalog of all project knowledge for Diátaxis documentation framework
 
@@ -38,7 +39,7 @@
 ### Project Identity
 
 **Name:** ocp4-aap-execution-environment  
-**Purpose:** Build custom Ansible Execution Environments for Ansible Automation Platform using Makefile-driven workflow  
+**Purpose:** Build custom AAP (Ansible Automation Platform) Execution Environments for OpenShift/Kubernetes environments using Makefile-driven workflow  
 **License:** GNU General Public License v3.0  
 **Author:** John Wadleigh  
 **Maintainer:** Tosin Akinosho (tosin2013)
