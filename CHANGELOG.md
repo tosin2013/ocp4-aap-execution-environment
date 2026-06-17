@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- AAP 2.6 base image support (`registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest`)
+- oc-mirror binary for disconnected OpenShift environment support (commit de5f0ab)
+- Version compatibility documentation (VERSION_COMPATIBILITY.md) with AAP 2.5/2.6 upgrade guidance
+
+### Changed
+- Base image upgraded from AAP 2.5 to AAP 2.6 (ansible-automation-platform-26)
+- pip requirement updated from >=21.0 to >=26.1.2
+- setuptools requirement updated from >=50.0 to >=82.0.1
+- GitHub Actions dependencies updated (actions/deploy-pages v4→v5, actions/upload-pages-artifact v3→v5, actions/upload-artifact v4→v7, actions/checkout v4→v6, actions/setup-python v5→v6)
+- mkdocs-mermaid2-plugin requirement updated from >=1.0.0 to >=1.2.3
+
 ### Fixed (Post-v1.1.0 Release)
 - Documentation build failures in strict mode (commit f99676d, fc8a4a0)
   - Fixed broken links in `release-process.md` referencing `SECURITY_CHECKLIST.md` outside docs directory
