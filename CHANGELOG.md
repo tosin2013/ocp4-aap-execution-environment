@@ -7,33 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-17
+
 ### Added
 - AAP 2.6 base image support (`registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest`)
-- oc-mirror binary for disconnected OpenShift environment support (commit de5f0ab)
-- Version compatibility documentation (VERSION_COMPATIBILITY.md) with AAP 2.5/2.6 upgrade guidance
+- oc-mirror binary for disconnected OpenShift environment support
+- PIP_INDEX_URL custom Python package index support with comprehensive documentation
+- How-to guide: [Using oc-mirror in Execution Environments](docs/how-to/use-oc-mirror.md)
+- How-to guide: [Using Custom Python Package Indexes](docs/how-to/custom-python-index.md)
+- VERSION_COMPATIBILITY.md with AAP 2.5/2.6 upgrade guidance and version history
+- Detailed v1.1.0 → v1.2.0 upgrade path with rollback procedures
 
 ### Changed
 - Base image upgraded from AAP 2.5 to AAP 2.6 (ansible-automation-platform-26)
-- pip requirement updated from >=21.0 to >=26.1.2
-- setuptools requirement updated from >=50.0 to >=82.0.1
-- GitHub Actions dependencies updated (actions/deploy-pages v4→v5, actions/upload-pages-artifact v3→v5, actions/upload-artifact v4→v7, actions/checkout v4→v6, actions/setup-python v5→v6)
-- mkdocs-mermaid2-plugin requirement updated from >=1.0.0 to >=1.2.3
+- pip requirement updated from >=21.0 to >=26.1.2 ([PR #6](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/6))
+- setuptools requirement updated from >=50.0 to >=82.0.1 (manually applied after closing [PR #7](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/7), [PR #8](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/8))
+- GitHub Actions dependencies updated to Node.js 24 compatible versions:
+  - actions/deploy-pages v4→v5 ([PR #1](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/1))
+  - actions/upload-pages-artifact v3→v5 ([PR #2](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/2))
+  - actions/upload-artifact v4→v7 ([PR #3](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/3))
+  - actions/checkout v4→v6 ([PR #4](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/4))
+  - actions/setup-python v5→v6 ([PR #5](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/5))
+- mkdocs-mermaid2-plugin requirement updated from >=1.0.0 to >=1.2.3 ([PR #10](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/10))
+- README updated to reflect AAP 2.6 base image and oc-mirror binary inclusion
 
-### Fixed (Post-v1.1.0 Release)
-- Documentation build failures in strict mode (commit f99676d, fc8a4a0)
+### Fixed
+- Documentation build failures in strict mode (v1.1.0 post-release fixes)
   - Fixed broken links in `release-process.md` referencing `SECURITY_CHECKLIST.md` outside docs directory
   - Copied `SECURITY_CHECKLIST.md` to docs/ directory and updated all relative links
   - Added missing navigation entries for Release Process, Security Checklist, and all 8 ADRs
   - MkDocs strict mode now passes - all pages included in nav and all internal links valid
-- CI workflow missing OpenShift tooling configuration (commit 2c01622)
+- CI workflow missing OpenShift tooling configuration (v1.1.0 post-release fix)
   - Added step to auto-create `oc-install.env` with `OC_VERSION=stable-4.21`
   - Ensures OpenShift CLI tools are always installed in tagged builds
   - Resolves build failures when trying to copy non-existent oc/kubectl binaries
+- README TODO addressed with comprehensive PIP_INDEX_URL documentation
 
-### Changed
-- Documentation build verification added to Pre-Release checklist (commit fc8a4a0)
-  - "Documentation build passes in strict mode" now mandatory before tagging releases
-  - Prevents broken documentation from being published with releases
+### Documented
+- AAP 2.6 as production-ready base image (replaces AAP 2.5)
+- oc-mirror usage for disconnected/air-gapped environments
+- PIP_INDEX_URL configuration for custom Python package indexes (Artifactory, Nexus, air-gapped)
+- Upgrade path from v1.1.0 (AAP 2.5) to v1.2.0 (AAP 2.6) with rollback procedures
+- Node.js 24 compatibility with all GitHub Actions
+- Documentation build verification as mandatory pre-release requirement
 
 ## [1.1.0] - 2026-04-21
 
@@ -135,5 +151,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python dependencies: ara (playbook recording), pip, setuptools
 - System dependencies: dnf, git, jq, rsync, curl, tar, python3-pip
 
-[Unreleased]: https://github.com/tosin2013/ansible-execution-environment/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/tosin2013/ansible-execution-environment/releases/tag/v1.0.0
+[Unreleased]: https://github.com/tosin2013/ocp4-aap-execution-environment/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/tosin2013/ocp4-aap-execution-environment/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/tosin2013/ocp4-aap-execution-environment/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/tosin2013/ocp4-aap-execution-environment/releases/tag/v1.0.0
