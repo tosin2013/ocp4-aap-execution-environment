@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-06-17
+
+### Added
+- `infra.aap_utilities` collection for AAP deployment workflows
+  - Required by deploy-aap.yml playbook in ocp4-disconnected-helper
+  - Provides aap_setup_download, aap_setup_prepare, aap_setup_install roles
+  - Enables AAP 2.6 containerized deployment automation
+
+### Fixed
+- Missing collection error when running AAP deployment playbooks from ocp4-disconnected-helper
+
 ## [1.2.0] - 2026-06-17
 
 ### Added
