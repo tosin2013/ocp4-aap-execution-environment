@@ -283,6 +283,13 @@
 
 ### Use Cases
 
+**Downstream CI/CD Integration:**
+- **Primary Use Case:** ocp4-disconnected-helper project ([Issue #37](https://github.com/tosin2013/ocp4-disconnected-helper/issues/37))
+- Validate AAP playbooks in GitHub Actions without storing Automation Hub credentials
+- Pre-built image eliminates pip install + collection download time
+- Consistent environment between CI and AAP runtime
+- Supports ansible.controller and ansible.hub playbook validation
+
 **Disconnected Environments:**
 - oc-mirror binary for OpenShift content mirroring
 - Custom Python package indexes via PIP_INDEX_URL

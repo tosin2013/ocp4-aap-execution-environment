@@ -279,6 +279,7 @@ DID = "DOC:ocp4-aap-execution-environment:" + RELATIVE_PATH
 **Updated Documents:**
 - docs/index.md (v1.2.0 quick reference, reorganized sections)
 - docs/adrs/README.md (added ADR-0009)
+- docs/how-to/ci-cd.md (added downstream CI/CD integration section with ocp4-disconnected-helper example)
 - mkdocs.yml/mkdocs.yml (added 5 new navigation entries)
 
 ## Quality Metrics
