@@ -64,6 +64,57 @@ https://developers.redhat.com/articles/2025/01/27/how-manage-python-dependencies
 - **System dependencies:** The minimal base image requires `python3-pip` in `bindep.txt`
 - **Testing:** The `make test` target uses `--pull-policy never` to use locally built images
 
+## Using the Published Image
+
+This execution environment is published to Quay for community use:
+
+```bash
+# Pull the latest image
+podman pull quay.io/takinosh/ocp4-aap-execution-environment:latest
+
+# Run a playbook using ansible-navigator
+ansible-navigator run your-playbook.yml \
+  --execution-environment-image quay.io/takinosh/ocp4-aap-execution-environment:latest \
+  --mode stdout
+
+# Interactive shell inside the EE
+podman run -it --rm quay.io/takinosh/ocp4-aap-execution-environment:latest /bin/bash
+
+# Run ad-hoc command
+ansible-navigator exec -- ansible-playbook --version
+```
+
+**Included Collections**:
+- `ansible.controller` - AAP job template and credential management
+- `ansible.hub` - AAP configuration management
+- `kubernetes.core` - Kubernetes/OpenShift resource management
+- `amazon.aws` - AWS automation
+- `azure.azcollection` - Azure automation
+- `community.general` - Common utilities
+- `ansible.utils` - Network and data utilities
+
+**Included Binaries**:
+- `oc` / `kubectl` - OpenShift/Kubernetes CLI (v4.21)
+- `podman` - Container management
+
+**CI/CD Integration**:
+
+This EE is designed for GitHub Actions workflows and AAP deployments. See [Issue #37](https://github.com/tosin2013/ocp4-disconnected-helper/issues/37) for integration examples.
+
+```yaml
+# Example GitHub Actions usage
+- name: Pull Custom AAP Execution Environment
+  run: podman pull quay.io/takinosh/ocp4-aap-execution-environment:latest
+
+- name: Check playbook syntax
+  run: |
+    podman run --rm \
+      -v $PWD:/workspace:Z \
+      -w /workspace \
+      quay.io/takinosh/ocp4-aap-execution-environment:latest \
+      ansible-playbook --syntax-check playbooks/your-playbook.yml
+```
+
 ## Find and Test Image
 
 Search for images and then checks collections, system packages and python packages manually before we run the ansible-builder command.

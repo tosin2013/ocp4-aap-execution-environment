@@ -12,7 +12,7 @@ ansible-navigator:
     enable: false
   execution-environment:
     enabled: true
-    image: ansible-ee-minimal:latest
+    image: quay.io/takinosh/ocp4-aap-execution-environment:latest
     container-engine: auto
     environment-variables:
       pass:
