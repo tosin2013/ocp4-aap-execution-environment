@@ -13,15 +13,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AAP 2.6 base image support (`registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest`)
 - oc-mirror binary for disconnected OpenShift environment support
 - PIP_INDEX_URL custom Python package index support with comprehensive documentation
+- Vulnerability scanning with dual approach: Quay.io (primary) + Trivy (secondary)
+- Automated image signing with cosign (key-based and keyless OIDC)
+- Diátaxis documentation framework (40 files: 2 tutorials, 14 how-to guides, 14 reference docs, 4 explanation docs)
 - How-to guide: [Using oc-mirror in Execution Environments](docs/how-to/use-oc-mirror.md)
 - How-to guide: [Using Custom Python Package Indexes](docs/how-to/custom-python-index.md)
+- How-to guide: [Sign and Verify Container Images](docs/how-to/sign-and-verify-images.md)
+- How-to guide: [Dependabot and Release Management](docs/how-to/dependabot-releases.md)
+- Tutorial: [Upgrading to v1.2.0 (AAP 2.6)](docs/tutorials/upgrading-to-v1.2.0.md)
+- ADR-0009: Security Scanning Strategy (dual scanning approach)
 - VERSION_COMPATIBILITY.md with AAP 2.5/2.6 upgrade guidance and version history
 - Detailed v1.1.0 → v1.2.0 upgrade path with rollback procedures
+- Documentation sync manifest (docs/docsync.md) with DID mapping for PMB integration
+- Knowledge inventory catalog (docs/KNOWLEDGE_INVENTORY.md) with 200+ facts
+- CI/CD integration guide for downstream AAP playbook validation ([ocp4-disconnected-helper Issue #37](https://github.com/tosin2013/ocp4-disconnected-helper/issues/37))
 
 ### Changed
 - Base image upgraded from AAP 2.5 to AAP 2.6 (ansible-automation-platform-26)
-- pip requirement updated from >=21.0 to >=26.1.2 ([PR #6](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/6))
+- pip requirement corrected to >=26.0.1 (latest available, was incorrectly set to >=26.1.2)
 - setuptools requirement updated from >=50.0 to >=82.0.1 (manually applied after closing [PR #7](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/7), [PR #8](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/8))
+- Dependabot configuration updated to monitor AAP 2.6 base image (was AAP 2.5)
 - GitHub Actions dependencies updated to Node.js 24 compatible versions:
   - actions/deploy-pages v4→v5 ([PR #1](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/1))
   - actions/upload-pages-artifact v3→v5 ([PR #2](https://github.com/tosin2013/ocp4-aap-execution-environment/pull/2))
@@ -35,21 +46,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation build failures in strict mode (v1.1.0 post-release fixes)
   - Fixed broken links in `release-process.md` referencing `SECURITY_CHECKLIST.md` outside docs directory
   - Copied `SECURITY_CHECKLIST.md` to docs/ directory and updated all relative links
-  - Added missing navigation entries for Release Process, Security Checklist, and all 8 ADRs
+  - Added missing navigation entries for Release Process, Security Checklist, and all ADRs
+  - Added v1.2.0 documentation files to mkdocs.yml navigation
+  - Updated docs/index.md links to use GitHub URLs instead of relative paths
   - MkDocs strict mode now passes - all pages included in nav and all internal links valid
 - CI workflow missing OpenShift tooling configuration (v1.1.0 post-release fix)
   - Added step to auto-create `oc-install.env` with `OC_VERSION=stable-4.21`
   - Ensures OpenShift CLI tools are always installed in tagged builds
   - Resolves build failures when trying to copy non-existent oc/kubectl binaries
+- GitHub Actions workflow syntax error in build-and-push.yml
+  - Fixed invalid `secrets` context usage in `if` conditions (lines 137, 149)
+  - Combined image signing steps into single conditional bash script
+  - Workflow now validates successfully
 - README TODO addressed with comprehensive PIP_INDEX_URL documentation
+- pip version requirement corrected from non-existent >=26.1.2 to available >=26.0.1
 
 ### Documented
 - AAP 2.6 as production-ready base image (replaces AAP 2.5)
 - oc-mirror usage for disconnected/air-gapped environments
 - PIP_INDEX_URL configuration for custom Python package indexes (Artifactory, Nexus, air-gapped)
+- Image signing and verification with cosign (key-based and keyless methods)
+- Vulnerability scanning strategy (Quay.io + Trivy dual approach)
+- Dependabot PR review process and release triggering strategy
+- Downstream CI/CD integration for AAP playbook validation (ocp4-disconnected-helper use case)
+- Diátaxis framework organization (tutorials, how-to, reference, explanation)
 - Upgrade path from v1.1.0 (AAP 2.5) to v1.2.0 (AAP 2.6) with rollback procedures
 - Node.js 24 compatibility with all GitHub Actions
 - Documentation build verification as mandatory pre-release requirement
+- PMB (Personal Memory Bank) integration with stable Document IDs (DIDs)
 
 ## [1.1.0] - 2026-04-21
 
