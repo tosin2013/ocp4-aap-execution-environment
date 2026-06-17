@@ -28,12 +28,23 @@ This documentation will guide you through understanding, using, and extending th
 
 ## ⚡ Quick Reference for New Users
 
+**What's New in v1.2.0:**
+- ✨ AAP 2.6 base image support (upgraded from AAP 2.5)
+- 🪞 oc-mirror binary for disconnected OpenShift environments
+- 📦 Custom Python package index support (PIP_INDEX_URL)
+- 🔒 Vulnerability scanning (Quay.io + Trivy)
+- ✍️ Image signing with cosign
+- ⬆️ Updated dependencies (pip >=26.1.2, setuptools >=82.0.1, GitHub Actions Node.js 24)
+
+See [CHANGELOG.md](../CHANGELOG.md) for complete v1.2.0 release notes.
+
 **First Steps:**
 1. Clone the repository
 2. Run `make setup` to verify your environment
 3. Set `ANSIBLE_HUB_TOKEN` environment variable (for certified collections)
 4. Run `make build` to create your execution environment
 5. Run `make test` to verify it works
+6. (Optional) Run `make scan-local` to check for vulnerabilities
 
 **Key Insights:**
 - ✅ `make setup` - Verify environment before building (catches issues early)
@@ -54,30 +65,49 @@ See [Troubleshoot EE Builds](how-to/troubleshoot-ee-builds.md) for detailed solu
 ## 📚 Learning-Oriented: Tutorials
 
 Start here to build your first custom Execution Environment.
-- [Getting Started with Execution Environments](tutorials/getting-started.md)
-Who this is for: new users; outcome: a working EE build.
+- [Getting Started with Execution Environments](tutorials/getting-started.md) - Build your first EE from scratch
+- [Upgrading to v1.2.0 (AAP 2.6)](tutorials/upgrading-to-v1.2.0.md) - Step-by-step upgrade from v1.1.0
+
+Who this is for: new users and those upgrading; outcome: a working EE build.
 
 ## 🔧 Task-Oriented: How-To Guides
 
 Practical guides for specific tasks and more advanced usage.
-- [How to Test Your Execution Environment](how-to/testing-execution-environment.md)
-- [How to Add Windows Support](how-to/add-windows-support.md)
+
+**Getting Started:**
 - [Build Locally with Makefile and Podman](how-to/build-locally.md)
-- [Enable Kubernetes and OpenShift Tooling](how-to/enable-kubernetes-openshift.md)
+- [How to Test Your Execution Environment](how-to/testing-execution-environment.md)
 - [Troubleshoot EE Builds](how-to/troubleshoot-ee-builds.md)
+
+**New in v1.2.0:**
+- [Using oc-mirror in Execution Environments](how-to/use-oc-mirror.md) - Mirror OpenShift content for disconnected environments
+- [Using Custom Python Package Indexes](how-to/custom-python-index.md) - Configure PIP_INDEX_URL for custom mirrors
+- [Sign and Verify Container Images](how-to/sign-and-verify-images.md) - Image signing with cosign
+
+**Advanced Topics:**
+- [Enable Kubernetes and OpenShift Tooling](how-to/enable-kubernetes-openshift.md)
+- [How to Add Windows Support](how-to/add-windows-support.md)
 - [Advanced Usage Guide](how-to/advanced-usage.md)
 - [CI/CD with GitHub Actions and Tekton](how-to/ci-cd.md)
-- [Optional llms.txt Manifest](how-to/llms-txt.md)
+- [Release Process](how-to/release-process.md)
+
+**Developer Guides:**
 - [Build Docs Locally (MkDocs)](how-to/build-docs-locally.md)
+- [Optional llms.txt Manifest](how-to/llms-txt.md)
+
 Who this is for: practitioners executing tasks; outcome: one concrete result per guide.
 
 ## 📖 Information-Oriented: Reference
 
 Detailed technical reference for the tools and configuration.
-- [Optional Configs and Secrets](reference/optional-configs-and-secrets.md)
-- [Make Targets and Variables](reference/make-targets.md)
-- [execution-environment.yml Reference](reference/execution-environment-yaml.md)
-- [Tooling Reference](reference/tooling.md)
+- [Make Targets and Variables](reference/make-targets.md) - Complete Makefile target reference
+- [execution-environment.yml Reference](reference/execution-environment-yaml.md) - YAML specification
+- [Tooling Reference](reference/tooling.md) - ansible-builder, ansible-navigator, podman
+- [Optional Configs and Secrets](reference/optional-configs-and-secrets.md) - Configuration files
+- [Architecture Decision Records (ADRs)](adrs/README.md) - 9 ADRs documenting key decisions
+- [VERSION_COMPATIBILITY.md](../VERSION_COMPATIBILITY.md) - AAP 2.5/2.6 compatibility and upgrade paths
+- [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md) - Security verification checklist
+
 Who this is for: readers needing exact options and commands.
 
 ## 💡 Understanding-Oriented: Explanation
