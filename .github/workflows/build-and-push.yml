@@ -101,8 +101,8 @@ jobs:
       - name: Verify oc-mirror Binary
         run: |
           echo "Verifying oc-mirror binary is included..."
-          podman run --rm ${{ env.TARGET_NAME }}:${{ steps.tag.outputs.tag }} which oc-mirror || { echo "ERROR: oc-mirror not found"; exit 1; }
-          echo "✓ oc-mirror binary confirmed"
+          podman run --rm ${{ env.TARGET_NAME }}:${{ steps.tag.outputs.tag }} test -f /usr/local/bin/oc-mirror || { echo "ERROR: oc-mirror not found at /usr/local/bin/oc-mirror"; exit 1; }
+          echo "✓ oc-mirror binary confirmed at /usr/local/bin/oc-mirror"
 
       - name: Install Trivy for Local Scanning
         run: |
