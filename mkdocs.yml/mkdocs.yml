@@ -61,6 +61,7 @@ nav:
       - Optional llms.txt Manifest: how-to/llms-txt.md
       - Release Process: how-to/release-process.md
       - Dependabot and Release Management: how-to/dependabot-releases.md
+      - Complete Release Workflow: how-to/release-workflow.md
   - Reference:
       - Optional Configs and Secrets: reference/optional-configs-and-secrets.md
       - Make Targets and Variables: reference/make-targets.md
