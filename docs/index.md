@@ -36,7 +36,7 @@ This documentation will guide you through understanding, using, and extending th
 - ✍️ Image signing with cosign
 - ⬆️ Updated dependencies (pip >=26.1.2, setuptools >=82.0.1, GitHub Actions Node.js 24)
 
-See [CHANGELOG.md](../CHANGELOG.md) for complete v1.2.0 release notes.
+See [CHANGELOG.md](https://github.com/tosin2013/ocp4-aap-execution-environment/blob/main/CHANGELOG.md) for complete v1.2.0 release notes.
 
 **First Steps:**
 1. Clone the repository
@@ -105,7 +105,7 @@ Detailed technical reference for the tools and configuration.
 - [Tooling Reference](reference/tooling.md) - ansible-builder, ansible-navigator, podman
 - [Optional Configs and Secrets](reference/optional-configs-and-secrets.md) - Configuration files
 - [Architecture Decision Records (ADRs)](adrs/README.md) - 9 ADRs documenting key decisions
-- [VERSION_COMPATIBILITY.md](../VERSION_COMPATIBILITY.md) - AAP 2.5/2.6 compatibility and upgrade paths
+- [VERSION_COMPATIBILITY.md](https://github.com/tosin2013/ocp4-aap-execution-environment/blob/main/VERSION_COMPATIBILITY.md) - AAP 2.5/2.6 compatibility and upgrade paths
 - [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md) - Security verification checklist
 
 Who this is for: readers needing exact options and commands.
