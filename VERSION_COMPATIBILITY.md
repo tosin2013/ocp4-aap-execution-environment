@@ -6,17 +6,34 @@
 
 ## Version History
 
-### v26 (Current) - June 9, 2026
+### v1.2.0 (Current) - June 17, 2026
+- **Base Image:** `registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest`
+- **AAP Platform:** 2.6 (ansible-automation-platform-26)
+- **Release Tag:** `v1.2.0`
+- **Image Tags:** `quay.io/takinosh/ocp4-aap-execution-environment:v1.2.0`, `:latest`
+- **OpenShift CLI:** oc/kubectl v4.21.9
+- **New Features:** oc-mirror binary, PIP_INDEX_URL support, updated dependencies
+- **Status:** Active (production-ready)
+
+### v26 (Superseded by v1.2.0) - June 9, 2026
 - **Base Image:** `registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest`
 - **AAP Platform:** 2.6 (ansible-automation-platform-26)
 - **Image Tag:** `quay.io/takinosh/ocp4-aap-execution-environment:v26`
-- **Status:** Active
+- **Status:** Superseded by v1.2.0 semantic versioning release
 
-### v25 (Deprecated) - June 9, 2026
+### v1.1.0 - April 21, 2026
+- **Base Image:** `registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest`
+- **AAP Platform:** 2.5 (ansible-automation-platform-25)
+- **Release Tag:** `v1.1.0`
+- **OpenShift CLI:** oc/kubectl v4.21.9
+- **Features:** ADR framework (8 ADRs), OpenShift 4.21 support, Dependabot
+- **Status:** Compatible with AAP 2.5 only - upgrade to v1.2.0 for AAP 2.6
+
+### v25 (Legacy) - June 9, 2026
 - **Base Image:** `registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest`
 - **AAP Platform:** 2.5 (ansible-automation-platform-25)
 - **Image Tag:** `quay.io/takinosh/ocp4-aap-execution-environment:latest` (old)
-- **Status:** Version mismatch with AAP 2.6 - DEPRECATED
+- **Status:** DEPRECATED - Incompatible with AAP 2.6 platforms
 
 ## Error Symptoms
 
@@ -87,24 +104,81 @@ images:
 
 ## Upgrade Path
 
-When upgrading AAP platform:
+### Upgrading from v1.1.0 (AAP 2.5) to v1.2.0 (AAP 2.6)
+
+**Prerequisites:**
+- AAP platform already upgraded to 2.6
+- Access to build server with ansible-builder
+- Red Hat Automation Hub token configured
+
+**Steps:**
+
+1. **Pull Latest Code:**
+   ```bash
+   git clone https://github.com/tosin2013/ocp4-aap-execution-environment.git
+   cd ocp4-aap-execution-environment
+   git checkout v1.2.0
+   ```
+
+2. **Verify Base Image (Already AAP 2.6):**
+   ```bash
+   grep "base_image" execution-environment.yml
+   # Should show: ansible-automation-platform-26/ee-minimal-rhel9:latest
+   ```
+
+3. **Build New Execution Environment:**
+   ```bash
+   make setup  # Create venv and verify tools
+   make build  # Build with AAP 2.6 base
+   ```
+
+4. **Test Locally:**
+   ```bash
+   make test  # Run 36-task functional playbook
+   ```
+
+5. **Publish to Registry:**
+   ```bash
+   make publish  # Push to Quay with v1.2.0 tag
+   ```
+
+6. **Update AAP Configuration:**
+   - Log into AAP Web UI
+   - Navigate to Administration → Execution Environments
+   - Update image reference to `quay.io/takinosh/ocp4-aap-execution-environment:v1.2.0`
+   - Or rely on `:latest` tag auto-pull
+
+7. **Verification:**
+   - Run test job template in AAP
+   - Verify all 8 collections available (ansible.controller, ansible.hub, kubernetes.core, etc.)
+   - Verify oc/kubectl v4.21.9 accessible
+   - Verify oc-mirror available
+   - Check AAP job logs for successful EE pull
+
+**Rollback:**
+If issues occur, revert to v1.1.0:
+```bash
+# Update AAP EE configuration
+Image: quay.io/takinosh/ocp4-aap-execution-environment:v1.1.0
+```
+
+### Upgrading AAP Platform First
+
+When upgrading AAP platform from 2.5 to 2.6:
 
 1. **Before AAP Upgrade:**
-   - Note current AAP version (e.g., 2.5)
-   - Document custom EE base image version
+   - Note current EE version (v1.1.0)
+   - Document any custom collections or dependencies
+   - Backup AAP configuration
 
-2. **After AAP Upgrade:**
-   - Update `execution-environment.yml` with new base image
-   - Rebuild custom EE with matching version
-   - Push new image to Quay
-   - Update AAP EE configuration (or wait for auto-pull)
-   - Test job templates with new EE
+2. **After AAP Upgrade (2.5 → 2.6):**
+   - Immediately upgrade EE to v1.2.0 (follows steps above)
+   - AAP 2.6 requires AAP 26 base image - v1.1.0 will fail
 
 3. **Verification:**
-   - Run test job template
-   - Verify collections are available
-   - Verify oc/kubectl binaries work
-   - Check AAP job logs for EE pull success
+   - Run full test suite
+   - Verify no collection compatibility issues
+   - Check for any Ansible Core version conflicts
 
 ## References
 
