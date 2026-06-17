@@ -264,10 +264,9 @@ additional_build_steps:
     - COPY --from=galaxy /usr/local/bin/kubectl /usr/local/bin/kubectl
     - RUN ln -sf /usr/local/bin/oc /usr/bin/oc && ln -sf /usr/local/bin/kubectl /usr/bin/kubectl
     # Copy oc-mirror binary from galaxy stage (ADR 0029 enhancement - 2026-06-10)
-    # TEMPORARILY DISABLED: oc-mirror not installed during prepend_galaxy (no oc-mirror-install.env)
-    # Re-enable once workflow creates files/optional-configs/oc-mirror-install.env
-    # - COPY --from=galaxy /usr/local/bin/oc-mirror /usr/local/bin/oc-mirror
-    # - RUN ln -sf /usr/local/bin/oc-mirror /usr/bin/oc-mirror
+    # Re-enabled in v1.2.0: workflow now creates oc-mirror-install.env
+    - COPY --from=galaxy /usr/local/bin/oc-mirror /usr/local/bin/oc-mirror
+    - RUN ln -sf /usr/local/bin/oc-mirror /usr/bin/oc-mirror
     # Copy functional test playbook for AAP collections
     - COPY _build/configs/playbook.yml /opt/playbook.yml
     # ADR 0029: Configure registry.redhat.io authentication for AAP project syncs

@@ -76,6 +76,7 @@ jobs:
         run: |
           mkdir -p files/optional-configs
           echo "OC_VERSION=stable-4.21" > files/optional-configs/oc-install.env
+          echo "OC_MIRROR_VERSION=latest" > files/optional-configs/oc-mirror-install.env
 
       - name: Build
         env:
