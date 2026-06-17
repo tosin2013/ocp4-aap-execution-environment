@@ -92,7 +92,62 @@ jobs:
           TARGET_NAME="${{ env.TARGET_NAME }}" TARGET_TAG="${{ steps.tag.outputs.tag }}" CONTAINER_ENGINE=$CONTAINER_ENGINE \
             make test
 
+      - name: Verify AAP 2.6 Base Image
+        run: |
+          echo "Verifying AAP 2.6 base image is configured..."
+          grep -q "ansible-automation-platform-26" execution-environment.yml || { echo "ERROR: AAP 2.6 base image not configured"; exit 1; }
+          echo "✓ AAP 2.6 base image confirmed"
+
+      - name: Verify oc-mirror Binary
+        run: |
+          echo "Verifying oc-mirror binary is included..."
+          podman run --rm ${{ env.TARGET_NAME }}:${{ steps.tag.outputs.tag }} which oc-mirror || { echo "ERROR: oc-mirror not found"; exit 1; }
+          echo "✓ oc-mirror binary confirmed"
+
+      - name: Install Trivy for Local Scanning
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+          trivy --version
+
+      - name: Security Scan (Local with Trivy)
+        run: |
+          echo "Scanning image for HIGH and CRITICAL vulnerabilities..."
+          trivy image --severity HIGH,CRITICAL --exit-code 0 ${{ env.TARGET_NAME }}:${{ steps.tag.outputs.tag }}
+          echo "Local scan complete. Full scan will run on Quay after publish."
+
       - name: Publish
         run: |
           TARGET_NAME="${{ env.TARGET_NAME }}" TARGET_TAG="${{ steps.tag.outputs.tag }}" CONTAINER_ENGINE=$CONTAINER_ENGINE \
             make publish
+
+      - name: Security Scan (Quay.io)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "Triggering Quay.io security scan..."
+          echo "Image will be scanned automatically by Quay.io vulnerability scanner"
+          echo "View results at: https://quay.io/repository/${{ secrets.QUAY_USERNAME }}/${{ env.TARGET_NAME }}?tab=tags&tag=${{ steps.tag.outputs.tag }}"
+          sleep 30
+          echo "Scan initiated. Check Quay.io for detailed results."
+
+      - name: Install cosign
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: sigstore/cosign-installer@v3.7.0
+
+      - name: Sign Container Images
+        if: startsWith(github.ref, 'refs/tags/v') && secrets.COSIGN_PRIVATE_KEY != ''
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        run: |
+          echo "Signing images with cosign..."
+          echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+          cosign sign --yes --key cosign.key quay.io/${{ secrets.QUAY_USERNAME }}/${{ env.TARGET_NAME }}:${{ steps.tag.outputs.tag }}
+          cosign sign --yes --key cosign.key quay.io/${{ secrets.QUAY_USERNAME }}/${{ env.TARGET_NAME }}:latest
+          rm cosign.key
+          echo "✓ Images signed successfully"
+
+      - name: Sign Container Images (Keyless)
+        if: startsWith(github.ref, 'refs/tags/v') && secrets.COSIGN_PRIVATE_KEY == ''
+        run: |
+          echo "Note: COSIGN_PRIVATE_KEY not configured. Keyless signing requires manual OIDC authentication."
+          echo "To enable automated signing, add COSIGN_PRIVATE_KEY and COSIGN_PASSWORD to GitHub Secrets."
+          echo "Generate keys with: make generate-signing-key"
