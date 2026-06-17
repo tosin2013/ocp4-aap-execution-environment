@@ -6,17 +6,47 @@ Example repository to build Ansible Execution Environments using a Makefile.
 
 **Python Package Management:** Supports custom package indexes via `PIP_INDEX_URL` - see [Custom Python Index Guide](docs/how-to/custom-python-index.md)
 
+## What's New in v1.2.0
+
+- ✅ **AAP 2.6 Base Image** - Full support for Ansible Automation Platform 2.6
+- 🪞 **oc-mirror Binary** - Mirror OpenShift content for disconnected environments
+- 📦 **Custom Python Indexes** - Configure custom package indexes via PIP_INDEX_URL
+- ⬆️ **Updated Dependencies** - pip >=26.1.2, setuptools >=82.0.1, Node.js 24 GitHub Actions
+- 📖 **Comprehensive Guides** - Upgrade paths, disconnected environment support
+
+See [CHANGELOG.md](CHANGELOG.md) for full v1.2.0 release notes.
+
 ## Documentation
 
-- Docs Home: [docs/index.md](docs/index.md)
-- Tutorials: [Getting Started](docs/tutorials/getting-started.md)
-- How-To Guides: [Test Your EE](docs/how-to/testing-execution-environment.md), [Advanced Tasks](docs/how-to/advanced-usage.md), [CI/CD (Podman + Quay)](docs/how-to/ci-cd.md), [Build Docs Locally](docs/how-to/build-docs-locally.md)
-- How-To: [Enable Kubernetes and OpenShift](docs/how-to/enable-kubernetes-openshift.md)
-- How-To: [Troubleshoot EE Builds](docs/how-to/troubleshoot-ee-builds.md)
-- Reference: [Tooling Reference](docs/reference/tooling.md)
-- Reference: [Optional Configs and Secrets](docs/reference/optional-configs-and-secrets.md)
-- Reference: [Make Targets and Variables](docs/reference/make-targets.md)
-- Explanation: [Concepts](docs/explanation/concepts.md), [Technology Stack](docs/explanation/technology-stack.md), [Design Decisions](docs/explanation/design-decisions.md)
+**Getting Started:**
+- [Getting Started Tutorial](docs/tutorials/getting-started.md)
+- [Build Locally](docs/how-to/build-locally.md)
+- [Test Your EE](docs/how-to/testing-execution-environment.md)
+
+**New in v1.2.0:**
+- [Using oc-mirror in Execution Environments](docs/how-to/use-oc-mirror.md) - Disconnected OpenShift mirroring
+- [Using Custom Python Package Indexes](docs/how-to/custom-python-index.md) - PIP_INDEX_URL configuration
+- [VERSION_COMPATIBILITY.md](VERSION_COMPATIBILITY.md) - AAP 2.5/2.6 upgrade paths
+
+**Additional Guides:**
+- [Enable Kubernetes and OpenShift](docs/how-to/enable-kubernetes-openshift.md)
+- [CI/CD (Podman + Quay)](docs/how-to/ci-cd.md)
+- [Troubleshoot EE Builds](docs/how-to/troubleshoot-ee-builds.md)
+- [Advanced Usage](docs/how-to/advanced-usage.md)
+- [Build Docs Locally](docs/how-to/build-docs-locally.md)
+
+**Reference:**
+- [Make Targets and Variables](docs/reference/make-targets.md)
+- [Optional Configs and Secrets](docs/reference/optional-configs-and-secrets.md)
+- [Tooling Reference](docs/reference/tooling.md)
+
+**Architecture:**
+- [8 Architecture Decision Records (ADRs)](docs/adrs/)
+- [Design Decisions](docs/explanation/design-decisions.md)
+- [Technology Stack](docs/explanation/technology-stack.md)
+- [Concepts](docs/explanation/concepts.md)
+
+**Full Documentation:** [docs/index.md](docs/index.md)
 
 ## Prerequisites
 
@@ -67,23 +97,39 @@ Example repository to build Ansible Execution Environments using a Makefile.
 
 ## Using the Published Image
 
-This execution environment is published to Quay for community use:
+This execution environment is published to Quay for community use.
+
+**Image Tags:**
+- `latest` - Most recent release (currently v1.2.0 with AAP 2.6)
+- `v1.2.0` - AAP 2.6 base, oc-mirror, PIP_INDEX_URL support
+- `v1.1.0` - AAP 2.5 base, OpenShift 4.21, ADR framework
+
+**Quick Start:**
 
 ```bash
-# Pull the latest image
-podman pull quay.io/takinosh/ocp4-aap-execution-environment:latest
+# Pull the latest AAP 2.6 image
+podman pull quay.io/takinosh/ocp4-aap-execution-environment:v1.2.0
 
 # Run a playbook using ansible-navigator
 ansible-navigator run your-playbook.yml \
-  --execution-environment-image quay.io/takinosh/ocp4-aap-execution-environment:latest \
+  --execution-environment-image quay.io/takinosh/ocp4-aap-execution-environment:v1.2.0 \
   --mode stdout
 
 # Interactive shell inside the EE
-podman run -it --rm quay.io/takinosh/ocp4-aap-execution-environment:latest /bin/bash
+podman run -it --rm quay.io/takinosh/ocp4-aap-execution-environment:v1.2.0 /bin/bash
 
-# Run ad-hoc command
-ansible-navigator exec -- ansible-playbook --version
+# Check included tools
+podman run --rm quay.io/takinosh/ocp4-aap-execution-environment:v1.2.0 oc version
+podman run --rm quay.io/takinosh/ocp4-aap-execution-environment:v1.2.0 oc-mirror version
 ```
+
+**For AAP 2.5 Platforms:**
+```bash
+# Use v1.1.0 for AAP 2.5 compatibility
+podman pull quay.io/takinosh/ocp4-aap-execution-environment:v1.1.0
+```
+
+**Upgrade Guide:** See [VERSION_COMPATIBILITY.md](VERSION_COMPATIBILITY.md) for v1.1.0 → v1.2.0 migration.
 
 **Included Collections**:
 - `ansible.controller` - AAP job template and credential management
@@ -96,8 +142,12 @@ ansible-navigator exec -- ansible-playbook --version
 
 **Included Binaries**:
 - `oc` / `kubectl` - OpenShift/Kubernetes CLI (v4.21.9)
-- `oc-mirror` - OpenShift mirroring tool for disconnected environments
+- `oc-mirror` - OpenShift mirroring tool for disconnected environments ([Usage Guide](docs/how-to/use-oc-mirror.md))
 - `podman` - Container management
+
+**Python Package Management:**
+- Custom indexes supported via `PIP_INDEX_URL` ([Configuration Guide](docs/how-to/custom-python-index.md))
+- pip >=26.1.2, setuptools >=82.0.1
 
 **CI/CD Integration**:
 
@@ -125,9 +175,9 @@ Search for images and then checks collections, system packages and python packag
 # Login to registry
 podman login registry.redhat.io
 # Search registry to find latest images
-podman search registry.redhat.io/ansible-automation-platform-25
-# Pull image and start container with volume mounts
-podman run -it -v $PWD:/opt/ansible registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest /bin/bash
+podman search registry.redhat.io/ansible-automation-platform-26
+# Pull AAP 2.6 base image and start container with volume mounts
+podman run -it -v $PWD:/opt/ansible registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest /bin/bash
 
 # Check dependencies for collections
 ansible-galaxy collection install -r requirements.yml
@@ -217,12 +267,12 @@ ansible-navigator run <playbook> --syntax-check --mode stdout`
 - Start shell session inside container image:
 
 ```shell
-# Generic command
-podman run -it registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest /bin/bash
+# Generic command (AAP 2.6)
+podman run -it registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest /bin/bash
 # With volume mounts
-podman run -it -v $PWD:/opt/ansible registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest /bin/bash
+podman run -it -v $PWD:/opt/ansible registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest /bin/bash
 # With volume mounts from SELinux enabled system
-podman run -it -v $PWD:/opt/ansible:z registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest /bin/bash
+podman run -it -v $PWD:/opt/ansible:z registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest /bin/bash
 ```
 
 - Run adhoc commands inside image:
