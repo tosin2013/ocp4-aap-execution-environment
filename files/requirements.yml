@@ -8,12 +8,13 @@
 # https://access.redhat.com/support/articles/ansible-automation-platform-certified-content
 
 collections:
-  # - name: redhat_cop.aap_utilities  # aap
-  # - name: infra.aap_configuration  # aap
   # AAP-licensed collections (requires Automation Hub authentication)
   # galaxy.sh --console configures access via ANSIBLE_GALAXY_TOKEN
   - name: ansible.controller  # aap (requires Automation Hub)
   - name: ansible.hub  # aap (requires Automation Hub - for AAP configuration)
+  - name: infra.aap_utilities  # aap (AAP setup/installation roles)
+  # - name: infra.aap_configuration  # aap (AAP configuration management)
+  # - name: redhat_cop.aap_utilities  # aap (deprecated, use infra.aap_utilities)
   # - name: ansible.eda  # aap (may pull kubernetes.core) - TEMPORARILY DISABLED: systemd-python build issue
   - name: amazon.aws  # cloud
   - name: azure.azcollection  # cloud
