@@ -15,8 +15,8 @@ SOURCE_HUB ?= registry.redhat.io
 SOURCE_TOKEN ?= ANSIBLE_HUB_TOKEN
 #SOURCE_USERNAME ?= jwadleig
 TARGET_HUB ?= quay.io
-#TARGET_USERNAME ?= jwadleig
-TARGET_NAME ?= ansible-ee-minimal
+TARGET_USERNAME ?= takinosh
+TARGET_NAME ?= ocp4-aap-execution-environment
 
 # Check ANSIBLE_HUB_TOKEN only for targets that need it
 # Use .PHONY target with a check that runs at execution time, not parse time
@@ -391,16 +391,16 @@ publish: # Publish the image with proper tags to container registry
 		$(TARGET_NAME):$(TARGET_TAG) $(TARGET_NAME):latest
 	$(CONTAINER_ENGINE) tag  \
 		$(TARGET_NAME):$(TARGET_TAG) \
-		$(TARGET_HUB)/$(TARGET_NAME):$(TARGET_TAG)
+		$(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):$(TARGET_TAG)
 	$(CONTAINER_ENGINE) push \
-		$(TARGET_HUB)/$(TARGET_NAME):$(TARGET_TAG)
+		$(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):$(TARGET_TAG)
 	$(CONTAINER_ENGINE) pull \
-		$(TARGET_HUB)/$(TARGET_NAME):$(TARGET_TAG)
+		$(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):$(TARGET_TAG)
 	$(CONTAINER_ENGINE) tag  \
-		$(TARGET_HUB)/$(TARGET_NAME):$(TARGET_TAG) \
-		$(TARGET_HUB)/${TARGET_NAME}\:latest
+		$(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):$(TARGET_TAG) \
+		$(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):latest
 	$(CONTAINER_ENGINE) push \
-		$(TARGET_HUB)/${TARGET_NAME}:latest
+		$(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):latest
 
 shell: # Run an interactive shell in the execution environment
 	$(CONTAINER_ENGINE) run -it --rm $(TARGET_NAME):$(TARGET_TAG) /bin/bash
