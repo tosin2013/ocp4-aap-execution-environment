@@ -134,20 +134,23 @@ jobs:
         uses: sigstore/cosign-installer@v3.7.0
 
       - name: Sign Container Images
-        if: startsWith(github.ref, 'refs/tags/v') && secrets.COSIGN_PRIVATE_KEY != ''
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: |
-          echo "Signing images with cosign..."
-          echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-          cosign sign --yes --key cosign.key quay.io/${{ secrets.QUAY_USERNAME }}/${{ env.TARGET_NAME }}:${{ steps.tag.outputs.tag }}
-          cosign sign --yes --key cosign.key quay.io/${{ secrets.QUAY_USERNAME }}/${{ env.TARGET_NAME }}:latest
-          rm cosign.key
-          echo "✓ Images signed successfully"
-
-      - name: Sign Container Images (Keyless)
-        if: startsWith(github.ref, 'refs/tags/v') && secrets.COSIGN_PRIVATE_KEY == ''
-        run: |
-          echo "Note: COSIGN_PRIVATE_KEY not configured. Keyless signing requires manual OIDC authentication."
-          echo "To enable automated signing, add COSIGN_PRIVATE_KEY and COSIGN_PASSWORD to GitHub Secrets."
-          echo "Generate keys with: make generate-signing-key"
+          if [ -n "$COSIGN_PRIVATE_KEY" ]; then
+            echo "Signing images with cosign (key-based)..."
+            echo "$COSIGN_PRIVATE_KEY" > cosign.key
+            cosign sign --yes --key cosign.key quay.io/$QUAY_USERNAME/${{ env.TARGET_NAME }}:${{ steps.tag.outputs.tag }}
+            cosign sign --yes --key cosign.key quay.io/$QUAY_USERNAME/${{ env.TARGET_NAME }}:latest
+            rm cosign.key
+            echo "✓ Images signed successfully"
+          else
+            echo "⚠ COSIGN_PRIVATE_KEY not configured - skipping image signing"
+            echo "To enable automated signing:"
+            echo "  1. Generate keys: make generate-signing-key"
+            echo "  2. Add COSIGN_PRIVATE_KEY and COSIGN_PASSWORD to GitHub Secrets"
+            echo "  3. Re-run this workflow"
+          fi
