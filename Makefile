@@ -416,6 +416,53 @@ publish: # Publish the image with proper tags to container registry
 		$(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):latest
 	$(CONTAINER_ENGINE) push \
 		$(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):latest
+	@echo "\nImages published. Run 'make sign' to sign images with cosign."
+
+sign: # Sign published images with cosign (requires cosign and COSIGN_KEY)
+	@echo "\n\n***************************** Signing images with cosign... \n"
+	@command -v cosign >/dev/null 2>&1 || { echo "Error: cosign not installed. Install with: curl -O -L https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 && sudo mv cosign-linux-amd64 /usr/local/bin/cosign && sudo chmod +x /usr/local/bin/cosign"; exit 1; }
+	@if [ -z "$$COSIGN_PASSWORD" ]; then \
+		echo "Warning: COSIGN_PASSWORD not set. You may be prompted for passphrase."; \
+	fi
+	@echo "Signing $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):$(TARGET_TAG)..."
+	cosign sign --key cosign.key $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):$(TARGET_TAG)
+	@echo "Signing $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):latest..."
+	cosign sign --key cosign.key $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):latest
+	@echo "\nImages signed successfully."
+	@echo "Verify with: make verify-signature"
+
+sign-keyless: # Sign images with cosign keyless mode (OIDC-based, no key required)
+	@echo "\n\n***************************** Signing images (keyless mode)... \n"
+	@command -v cosign >/dev/null 2>&1 || { echo "Error: cosign not installed."; exit 1; }
+	@echo "Signing $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):$(TARGET_TAG) with keyless cosign..."
+	@echo "You will be prompted to authenticate via OIDC (Google, GitHub, or Microsoft)"
+	cosign sign $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):$(TARGET_TAG)
+	@echo "Signing $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):latest..."
+	cosign sign $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):latest
+	@echo "\nImages signed successfully with keyless mode."
+
+verify-signature: # Verify image signatures
+	@echo "\n\n***************************** Verifying signatures... \n"
+	@command -v cosign >/dev/null 2>&1 || { echo "Error: cosign not installed."; exit 1; }
+	@echo "Verifying $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):$(TARGET_TAG)..."
+	cosign verify --key cosign.pub $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):$(TARGET_TAG) || echo "No valid signature found for $(TARGET_TAG)"
+	@echo "\nVerifying $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):latest..."
+	cosign verify --key cosign.pub $(TARGET_HUB)/$(TARGET_USERNAME)/$(TARGET_NAME):latest || echo "No valid signature found for latest"
+
+generate-signing-key: # Generate cosign key pair for signing (run once)
+	@echo "\n\n***************************** Generating cosign key pair... \n"
+	@command -v cosign >/dev/null 2>&1 || { echo "Error: cosign not installed."; exit 1; }
+	@if [ -f cosign.key ]; then \
+		echo "Error: cosign.key already exists. Remove it first or use existing key."; \
+		exit 1; \
+	fi
+	@echo "Generating cosign key pair (you will be prompted for a passphrase)..."
+	cosign generate-key-pair
+	@echo "\nKey pair generated:"
+	@echo "  Private key: cosign.key (keep secret, add to .gitignore)"
+	@echo "  Public key: cosign.pub (distribute for verification)"
+	@echo "\nStore cosign.key securely and set COSIGN_PASSWORD environment variable."
+	@echo "Add cosign.key to .gitignore to prevent accidental commit."
 
 shell: # Run an interactive shell in the execution environment
 	$(CONTAINER_ENGINE) run -it --rm $(TARGET_NAME):$(TARGET_TAG) /bin/bash
