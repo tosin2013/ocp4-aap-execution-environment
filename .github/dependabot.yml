@@ -38,7 +38,7 @@ updates:
       include: "scope"
     # Ignore patch updates for base image (too frequent, handle in monthly review)
     ignore:
-      - dependency-name: "registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9"
+      - dependency-name: "registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9"
         update-types: ["version-update:semver-patch"]
 
   # Python dependencies (pip) - files/requirements.txt
