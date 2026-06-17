@@ -1,20 +1,34 @@
 # Ansible Execution Environment
 
-Example repository to build Ansible Execution Environments using a Makefile.
+Production-ready container image for Ansible Automation Platform 2.6 with OpenShift/Kubernetes tooling.
 
-**Base Image:** `registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest` (AAP 2.6)
+**🚀 Quick Start:** See [QUICKSTART.md](QUICKSTART.md) to get running in 5 minutes!
 
-**Python Package Management:** Supports custom package indexes via `PIP_INDEX_URL` - see [Custom Python Index Guide](docs/how-to/custom-python-index.md)
+**Base Image:** `registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest` (AAP 2.6)  
+**Latest Release:** v1.2.0 (2026-06-17) - [Release Notes](https://github.com/tosin2013/ocp4-aap-execution-environment/releases/tag/v1.2.0)
+
+## Get the Image
+
+```bash
+# Latest release (v1.2.0)
+podman pull quay.io/takinosh/ocp4-aap-execution-environment:v1.2.0
+
+# Or always use latest
+podman pull quay.io/takinosh/ocp4-aap-execution-environment:latest
+```
+
+**Registry:** https://quay.io/repository/takinosh/ocp4-aap-execution-environment
 
 ## What's New in v1.2.0
 
 - ✅ **AAP 2.6 Base Image** - Full support for Ansible Automation Platform 2.6
-- 🪞 **oc-mirror Binary** - Mirror OpenShift content for disconnected environments
+- 🪞 **oc-mirror Binary** - Mirror OpenShift content for disconnected environments  
 - 📦 **Custom Python Indexes** - Configure custom package indexes via PIP_INDEX_URL
-- ⬆️ **Updated Dependencies** - pip >=26.1.2, setuptools >=82.0.1, Node.js 24 GitHub Actions
-- 📖 **Comprehensive Guides** - Upgrade paths, disconnected environment support
+- 🔒 **Security Hardening** - Dual vulnerability scanning (Quay.io + Trivy), automated cosign signing
+- 📖 **Diátaxis Documentation** - 40 files organized by purpose (tutorials, how-to, reference, explanation)
+- ⬆️ **Updated Dependencies** - All dependencies updated (June 2026)
 
-See [CHANGELOG.md](CHANGELOG.md) for full v1.2.0 release notes.
+See [CHANGELOG.md](CHANGELOG.md) for complete v1.2.0 release notes.
 
 ## Documentation
 
