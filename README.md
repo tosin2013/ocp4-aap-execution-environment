@@ -4,8 +4,7 @@ Example repository to build Ansible Execution Environments using a Makefile.
 
 **Base Image:** `registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9:latest` (AAP 2.6)
 
-TODO: Update docs to leverage new PIP_INDEX_URL environment variable option
-https://developers.redhat.com/articles/2025/01/27/how-manage-python-dependencies-ansible-execution-environments#python_dependency_management
+**Python Package Management:** Supports custom package indexes via `PIP_INDEX_URL` - see [Custom Python Index Guide](docs/how-to/custom-python-index.md)
 
 ## Documentation
 
