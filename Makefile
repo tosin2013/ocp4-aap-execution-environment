@@ -351,9 +351,24 @@ build: check-token venv-check validate-deps # Build the execution environment im
 			--verbosity $(VERBOSITY) \
 			--container-runtime $(CONTAINER_ENGINE) 2>&1 | tee -a ansible-builder.log
 
-scan: # Scan image for vulnerabilities https://www.redhat.com/sysadmin/using-quayio-scanner
-	@echo "\n\n***************************** Scanning... \n"
-	echo "TODO:"
+scan: # Scan image for vulnerabilities using Quay.io scanner
+	@echo "\n\n***************************** Scanning for vulnerabilities... \n"
+	@echo "Using Quay.io vulnerability scanner (requires image pushed to Quay)"
+	@echo "Image: $(QUAY_REGISTRY)/$(QUAY_NAMESPACE)/$(QUAY_IMAGE_NAME):$(TARGET_TAG)"
+	@echo "\nPushing image to Quay for scanning..."
+	$(CONTAINER_ENGINE) tag $(TARGET_NAME):$(TARGET_TAG) $(QUAY_REGISTRY)/$(QUAY_NAMESPACE)/$(QUAY_IMAGE_NAME):$(TARGET_TAG)
+	$(CONTAINER_ENGINE) push $(QUAY_REGISTRY)/$(QUAY_NAMESPACE)/$(QUAY_IMAGE_NAME):$(TARGET_TAG)
+	@echo "\nWaiting for Quay.io to complete vulnerability scan (30 seconds)..."
+	@sleep 30
+	@echo "\nFetching vulnerability report from Quay.io..."
+	@curl -s "https://quay.io/api/v1/repository/$(QUAY_NAMESPACE)/$(QUAY_IMAGE_NAME)/manifest/sha256:$$($(CONTAINER_ENGINE) inspect --format='{{.RepoDigests}}' $(QUAY_REGISTRY)/$(QUAY_NAMESPACE)/$(QUAY_IMAGE_NAME):$(TARGET_TAG) | sed 's/.*sha256://;s/].*//')/security?vulnerabilities=true" | jq -r '.data.Layer.Features[] | select(.Vulnerabilities) | .Vulnerabilities[] | "\(.Severity): \(.Name) - \(.Description // "No description")"' | sort -u || echo "Note: Install 'jq' for formatted output, or visit https://quay.io/repository/$(QUAY_NAMESPACE)/$(QUAY_IMAGE_NAME)?tab=tags for web-based results"
+	@echo "\nFull vulnerability report: https://quay.io/repository/$(QUAY_NAMESPACE)/$(QUAY_IMAGE_NAME)?tab=tags&tag=$(TARGET_TAG)"
+	@echo "\nScan complete. Review results above or in Quay.io web interface."
+
+scan-local: # Scan local image using Trivy (requires trivy installed)
+	@echo "\n\n***************************** Scanning with Trivy... \n"
+	@command -v trivy >/dev/null 2>&1 || { echo "Error: trivy not installed. Install with: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin"; exit 1; }
+	trivy image --severity HIGH,CRITICAL $(TARGET_NAME):$(TARGET_TAG)
 
 inspect: # Inspect built image to show information
 	@echo "\n\n***************************** Inspecting... \n"
