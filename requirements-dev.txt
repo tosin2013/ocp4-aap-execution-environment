@@ -7,7 +7,7 @@ ansible-navigator>=26.4.0,<27.0.0
 ansible-core>=2.21.0,<2.22.0
 
 # Linting and validation
-yamllint>=1.26.0,<2.0.0
+yamllint>=1.38.0,<2.0.0
 
 # Optional: Ansible linting (uncomment if needed)
 # ansible-lint>=6.0.0,<7.0.0
